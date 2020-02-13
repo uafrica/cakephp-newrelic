@@ -32,7 +32,7 @@ class NewRelic
     protected static $cookieVariables = [];
 
     /**
-     * @var
+     * @var string
      */
     protected static $currentTransactionName;
 

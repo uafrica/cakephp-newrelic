@@ -1,0 +1,6 @@
+parameters:
+    level: 8
+    checkMissingIterableValueType: false
+    ignoreErrors:
+        - '#Constant NEW_RELIC_APP_NAME not found\.#'
+        - '#Parameter \#[0-4] \$.* of function newrelic_notice_error expects .*, .* given.#'

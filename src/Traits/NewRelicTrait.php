@@ -3,8 +3,9 @@ declare(strict_types=1);
 
 namespace NewRelic\Traits;
 
+use Cake\Command\Command;
 use Cake\Console\Shell;
-use Cake\Network\ServerRequest;
+use Cake\Http\ServerRequest;
 use NewRelic\Lib\NewRelic;
 use Throwable;
 
@@ -23,7 +24,7 @@ trait NewRelicTrait
      * If `$name` is a Shell instance, the name will
      * automatically be derived based on best practices
      *
-     * @param string|\Cake\Shell\Shell|\Cake\Command\Command|\Cake\Network\ServerRequest $name String name or class to get name from
+     * @param string|\Cake\Console\Shell|\Cake\Command\Command|\Cake\Http\ServerRequest $name String name or class to get name from
      * @return void
      */
     public function setName($name): void
@@ -245,7 +246,7 @@ trait NewRelicTrait
 
         $name = array_filter($name);
         if (empty($name)) {
-            return $request->here;
+            return (string)$request->getUri();
         }
 
         $name = join('/', $name);
