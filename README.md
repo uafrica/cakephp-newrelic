@@ -60,7 +60,7 @@ use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use NewRelic\Traits\NewRelicTrait;
 
-class ChannelsImportCommand extends Command 
+class ChannelsImportCommand extends Command
 {
 	use NewRelicTrait;
 
@@ -77,44 +77,6 @@ class ChannelsImportCommand extends Command
 ### Controller
 
 Simply add `NewRelic.NewRelic` to your `$components` list
-
-### webroot/index.php
-
-Add this in top of your file after `require dirname(__DIR__) . '/vendor/autoload.php';`
-
-```php
-if (extension_loaded('newrelic')) {
-	$appType = 'app';
-	$appName = 'web';
-
-	if (strpos($_SERVER['REQUEST_URI'], '/admin/') !== false) {
-		$appName = 'admin';
-	}
-
-	define('NEW_RELIC_APP_NAME', sprintf('%1$s - %2$s - %3$s', 'production', $appType, $appName));
-
-	newrelic_set_appname(NEW_RELIC_APP_NAME);
-	newrelic_background_job(false);
-	newrelic_capture_params(true);
-}
-
-// Rest of your index.php here
-```
-
-### bin/cake.php
-
-Add this in top of your file after `require dirname(__DIR__) . '/vendor/autoload.php';`
-
-```php
-if (extension_loaded('newrelic')) {
-	define('NEW_RELIC_APP_NAME', sprintf('%s - app - cli', 'production'));
-	newrelic_set_appname(NEW_RELIC_APP_NAME);
-	newrelic_background_job(true);
-	newrelic_capture_params(true);
-}
-
-// Rest of your cake.php file here
-```
 
 ### Middleware
 
@@ -155,7 +117,7 @@ class Application extends BaseApplication
             ->add(AssetMiddleware::class)
             // Apply routing
             ->add(RoutingMiddleware::class);
-	    
+
         return $middleware;
     }
 }
