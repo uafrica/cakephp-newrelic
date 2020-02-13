@@ -233,13 +233,13 @@ trait NewRelicTrait
     {
         $name = [];
 
-        if ($request->getParam('prefix')) {
-            $name[] = $request->getParam('prefix');
-        }
-
         if ($request->getParam('plugin')) {
             $name[] = $request->getParam('plugin');
         }
+
+        if ($request->getParam('prefix')) {
+			$name[] = $request->getParam('prefix');
+		}
 
         $name[] = $request->getParam('controller');
         $name[] = $request->getParam('action');
