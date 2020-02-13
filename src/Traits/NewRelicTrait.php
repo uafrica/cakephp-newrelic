@@ -1,6 +1,10 @@
 <?php
+namespace NewRelic\Traits;
 
-App::uses('NewRelic', 'NewRelic.Lib');
+use NewRelic\Lib\NewRelic;
+use Cake\Console\Shell;
+use Cake\Network\Request;
+use Exception;
 
 trait NewRelicTrait {
 
@@ -9,7 +13,7 @@ trait NewRelicTrait {
  *
  * @var string
  */
-	protected $_name;
+	protected $_newrelicTransactionName;
 
 /**
  * Set the transaction name
@@ -21,14 +25,14 @@ trait NewRelicTrait {
  */
 	public function setName($name) {
 		if ($name instanceof Shell) {
-			$name = $this->_deriveNameFromShell($name);
+            $name = $this->_deriveNameFromShell($name);
 		}
 
-		if ($name instanceof CakeRequest) {
+		if ($name instanceof Request) {
 			$name = $this->_deriveNameFromRequest($name);
 		}
 
-		$this->_name = $name;
+		$this->_newrelicTransactionName = $name;
 	}
 
 /**
@@ -37,7 +41,7 @@ trait NewRelicTrait {
  * @return string
  */
 	public function getName() {
-		return $this->_name;
+		return $this->_newrelicTransactionName;
 	}
 
 /**
@@ -47,7 +51,7 @@ trait NewRelicTrait {
  * @return void
  */
 	public function applicationName($name) {
-		NewRelic::getInstance()->applicationName($name);
+		NewRelic::applicationName($name);
 	}
 
 /**
@@ -57,7 +61,7 @@ trait NewRelicTrait {
  * @return void
  */
 	public function start($name = null) {
-		NewRelic::getInstance()->start($this->_getTransactionName($name));
+		NewRelic::start($this->_getTransactionName($name));
 	}
 
 /**
@@ -66,7 +70,7 @@ trait NewRelicTrait {
  * @return void
  */
 	public function stop($ignore = false) {
-		NewRelic::getInstance()->stop($ignore);
+		NewRelic::stop($ignore);
 	}
 
 /**
@@ -75,7 +79,7 @@ trait NewRelicTrait {
  * @return void
  */
 	public function ignoreTransaction() {
-		NewRelic::getInstance()->ignoreTransaction();
+		NewRelic::ignoreTransaction();
 	}
 
 /**
@@ -84,18 +88,18 @@ trait NewRelicTrait {
  * @return void
  */
 	public function ignoreApdex() {
-		NewRelic::getInstance()->ignoreApdex();
+		NewRelic::ignoreApdex();
 	}
 
 /**
  * Add custom parameter to transaction
  *
  * @param  string $key
- * @param  scalar $value
+ * @param  mixed
  * @return void
  */
 	public function parameter($key, $value) {
-		NewRelic::getInstance()->parameter($key, $value);
+		NewRelic::parameter($key, $value);
 	}
 
 /**
@@ -106,7 +110,7 @@ trait NewRelicTrait {
  * @return void
  */
 	public function metric($key, $value) {
-		NewRelic::getInstance()->metric($key, $value);
+		NewRelic::metric($key, $value);
 	}
 
 /**
@@ -116,7 +120,7 @@ trait NewRelicTrait {
  * @return void
  */
 	public function captureParams($capture) {
-		NewRelic::getInstance()->captureParams($capture);
+		NewRelic::captureParams($capture);
 	}
 
 /**
@@ -125,7 +129,7 @@ trait NewRelicTrait {
  * @param string $method
  */
 	public function addTracer($method) {
-		NewRelic::getInstance()->addTracer($method);
+		NewRelic::addTracer($method);
 	}
 
 /**
@@ -137,7 +141,7 @@ trait NewRelicTrait {
  * @return void
  */
 	public function user($user, $account, $product) {
-		NewRelic::getInstance()->user($user, $account, $product);
+		NewRelic::user($user, $account, $product);
 	}
 
 /**
@@ -146,8 +150,13 @@ trait NewRelicTrait {
  * @param  Throwable $e
  * @return void
  */
+<<<<<<< HEAD:Trait/NewRelicTrait.php
 	public function sendException(Throwable $e) {
 		NewRelic::getInstance()->sendException($e);
+=======
+	public function sendException(Exception $e) {
+		NewRelic::sendException($e);
+>>>>>>> cake3:src/Traits/NewRelicTrait.php
 	}
 
 /**
@@ -161,7 +170,7 @@ trait NewRelicTrait {
 			return $name;
 		}
 
-		return $this->_name;
+		return $this->_newrelicTransactionName;
 	}
 
 /**
@@ -189,19 +198,19 @@ trait NewRelicTrait {
  * @param  CakeRequest $request
  * @return string
  */
-	protected function _deriveNameFromRequest(CakeRequest $request) {
+	protected function _deriveNameFromRequest(Request $request) {
 		$name = [];
 
-		if ($request->prefix) {
-			$name[] = $request->prefix;
+		if ($request->getParam('prefix')) {
+			$name[] = $request->getParam('prefix');
 		}
 
-		if ($request->plugin) {
-			$name[] = $request->plugin;
+		if ($request->getParam('plugin')) {
+			$name[] = $request->getParam('plugin');
 		}
 
-		$name[] = $request->controller;
-		$name[] = $request->action;
+		$name[] = $request->getParam('controller');
+		$name[] = $request->getParam('action');
 
 		$name = array_filter($name);
 		if (empty($name)) {
@@ -210,8 +219,8 @@ trait NewRelicTrait {
 
 		$name = join('/', $name);
 
-		if ($request->ext) {
-			$name .= '.' . $request->ext;
+		if ($request->getParam('ext')) {
+			$name .= '.' . $request->getParam('ext');
 		}
 
 		return $name;

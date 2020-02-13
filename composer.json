@@ -23,8 +23,25 @@
     "issues":"https://github.com/jippi/cakephp-newrelic/issues",
     "irc":"irc://irc.freenode.org/friendsofcake"
   },
-  "require":{
-    "composer/installers":"*"
+  "require": {
+    "cakephp/cakephp": "~3.0",
+    "cakephp/plugin-installer": "*"
+  },
+  "require-dev": {
+    "cakephp/cakephp-codesniffer": "dev-master",
+    "phpunit/phpunit": "4.1.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "NewRelic\\": "src",
+      "NewRelic\\Test\\Fixture\\": "tests\\Fixture"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cake\\Test\\": "vendor/cakephp/cakephp/tests",
+      "DebugKit\\Test\\": "tests"
+    }
   },
   "extra": {
     "installer-name": "NewRelic"
