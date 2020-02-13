@@ -1,229 +1,259 @@
 <?php
+declare(strict_types=1);
+
 namespace NewRelic\Traits;
 
-use NewRelic\Lib\NewRelic;
 use Cake\Console\Shell;
-use Cake\Network\Request;
-use Exception;
+use Cake\Network\ServerRequest;
+use NewRelic\Lib\NewRelic;
+use Throwable;
 
-trait NewRelicTrait {
+trait NewRelicTrait
+{
+    /**
+     * The transaction name to use
+     *
+     * @var string
+     */
+    protected $_newrelicTransactionName;
 
-/**
- * The transaction name to use
- *
- * @var string
- */
-	protected $_newrelicTransactionName;
-
-/**
- * Set the transaction name
- *
- * If `$name` is a Shell instance, the name will
- * automatically be derived based on best practices
- *
- * @param string|Shell $name
- */
-	public function setName($name) {
-		if ($name instanceof Shell) {
+    /**
+     * Set the transaction name
+     *
+     * If `$name` is a Shell instance, the name will
+     * automatically be derived based on best practices
+     *
+     * @param string|\Cake\Shell\Shell|\Cake\Command\Command|\Cake\Network\ServerRequest $name String name or class to get name from
+     * @return void
+     */
+    public function setName($name): void
+    {
+        if ($name instanceof Shell) {
             $name = $this->_deriveNameFromShell($name);
-		}
+        }
 
-		if ($name instanceof Request) {
-			$name = $this->_deriveNameFromRequest($name);
-		}
+        if ($name instanceof Command) {
+            $name = $this->_deriveNameFromCommand($name);
+        }
 
-		$this->_newrelicTransactionName = $name;
-	}
+        if ($name instanceof ServerRequest) {
+            $name = $this->_deriveNameFromRequest($name);
+        }
 
-/**
- * Get the name
- *
- * @return string
- */
-	public function getName() {
-		return $this->_newrelicTransactionName;
-	}
+        $this->_newrelicTransactionName = $name;
+    }
 
-/**
- * Change the application name
- *
- * @param  string $name
- * @return void
- */
-	public function applicationName($name) {
-		NewRelic::applicationName($name);
-	}
+    /**
+     * Get the name
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->_newrelicTransactionName;
+    }
 
-/**
- * Start a NewRelic transaction
- *
- * @param  null|string $name
- * @return void
- */
-	public function start($name = null) {
-		NewRelic::start($this->_getTransactionName($name));
-	}
+    /**
+     * Change the application name
+     *
+     * @param  string $name Application name
+     * @return void
+     */
+    public function applicationName(string $name): void
+    {
+        NewRelic::applicationName($name);
+    }
 
-/**
- * Stop a transaction
- *
- * @return void
- */
-	public function stop($ignore = false) {
-		NewRelic::stop($ignore);
-	}
+    /**
+     * Start a NewRelic transaction
+     *
+     * @param  null|string $name Start a transaction
+     * @return void
+     */
+    public function start(?string $name = null): void
+    {
+        NewRelic::start($this->_getTransactionName($name));
+    }
 
-/**
- * Ignore current transaction
- *
- * @return void
- */
-	public function ignoreTransaction() {
-		NewRelic::ignoreTransaction();
-	}
+    /**
+     * Stop a transaction
+     *
+     * @param bool $ignore Should the statistics NewRelic gathered be discarded?
+     * @return void
+     */
+    public function stop(bool $ignore = false): void
+    {
+        NewRelic::stop($ignore);
+    }
 
-/**
- * Ignore current apdex
- *
- * @return void
- */
-	public function ignoreApdex() {
-		NewRelic::ignoreApdex();
-	}
+    /**
+     * Ignore current transaction
+     *
+     * @return void
+     */
+    public function ignoreTransaction(): void
+    {
+        NewRelic::ignoreTransaction();
+    }
 
-/**
- * Add custom parameter to transaction
- *
- * @param  string $key
- * @param  mixed
- * @return void
- */
-	public function parameter($key, $value) {
-		NewRelic::parameter($key, $value);
-	}
+    /**
+     * Ignore current apdex
+     *
+     * @return void
+     */
+    public function ignoreApdex(): void
+    {
+        NewRelic::ignoreApdex();
+    }
 
-/**
- * Add custom metric
- *
- * @param  string $key
- * @param  float $value
- * @return void
- */
-	public function metric($key, $value) {
-		NewRelic::metric($key, $value);
-	}
+    /**
+     * Add custom parameter to transaction
+     *
+     * @param  string $key Parameter name
+     * @param  mixed $value Value for the parameter
+     * @return void
+     */
+    public function parameter(string $key, $value): void
+    {
+        NewRelic::parameter($key, $value);
+    }
 
-/**
- * capture params
- *
- * @param  boolean $capture
- * @return void
- */
-	public function captureParams($capture) {
-		NewRelic::captureParams($capture);
-	}
+    /**
+     * Add custom metric
+     *
+     * @param  string $key Metric name
+     * @param  float $value Value for the metric
+     * @return void
+     */
+    public function metric(string $key, $value): void
+    {
+        NewRelic::metric($key, $value);
+    }
 
-/**
- * Add custom tracer method
- *
- * @param string $method
- */
-	public function addTracer($method) {
-		NewRelic::addTracer($method);
-	}
+    /**
+     * capture params
+     *
+     * @param bool $capture Enable/Disable capturing of parameters
+     * @return void
+     */
+    public function captureParams(bool $capture): void
+    {
+        NewRelic::captureParams($capture);
+    }
 
-/**
- * Set user attributes
- *
- * @param  string $user
- * @param  string $account
- * @param  string $product
- * @return void
- */
-	public function user($user, $account, $product) {
-		NewRelic::user($user, $account, $product);
-	}
+    /**
+     * Add custom tracer method
+     *
+     * @param string $method Name of the method to trace
+     * @return void
+     */
+    public function addTracer(string $method): void
+    {
+        NewRelic::addTracer($method);
+    }
 
-/**
- * Send an exception to New Relic
- *
- * @param  Throwable $e
- * @return void
- */
-<<<<<<< HEAD:Trait/NewRelicTrait.php
-	public function sendException(Throwable $e) {
-		NewRelic::getInstance()->sendException($e);
-=======
-	public function sendException(Exception $e) {
-		NewRelic::sendException($e);
->>>>>>> cake3:src/Traits/NewRelicTrait.php
-	}
+    /**
+     * Set user attributes
+     *
+     * @param  string $user Name or username for this transaction
+     * @param  string $account Account name
+     * @param  string $product A product name
+     * @return void
+     */
+    public function user(string $user = '', string $account = '', string $product = ''): void
+    {
+        NewRelic::user($user, $account, $product);
+    }
 
-/**
- * Get transaction name
- *
- * @param  string $name
- * @return string
- */
-	protected function _getTransactionName($name) {
-		if (is_string($name)) {
-			return $name;
-		}
+    /**
+     * Send an exception to New Relic
+     *
+     * @param \Throwable $e A throwable to send to New Relic
+     * @return void
+     */
+    public function sendException(Throwable $e): void
+    {
+        NewRelic::sendException($e);
+    }
 
-		return $this->_newrelicTransactionName;
-	}
+    /**
+     * Get transaction name
+     *
+     * @param  string|null $name An override name to use
+     * @return string
+     */
+    protected function _getTransactionName(?string $name): string
+    {
+        if (is_string($name)) {
+            return $name;
+        }
 
-/**
- * Derive the transaction name
- *
- * @param  Shell $name
- * @return string
- */
-	protected function _deriveNameFromShell(Shell $shell) {
-		$name = [];
+        return $this->_newrelicTransactionName;
+    }
 
-		if ($shell->plugin) {
-			$name[] = $shell->plugin;
-		}
+    /**
+     * Derive the transaction name
+     *
+     * @param \Cake\Console\Shell $shell The shell instance
+     * @return string
+     */
+    protected function _deriveNameFromShell(Shell $shell): string
+    {
+        $name = [];
 
-		$name[] = $shell->name;
-		$name[] = $shell->command;
+        if ($shell->plugin) {
+            $name[] = $shell->plugin;
+        }
 
-		return join('/', $name);
-	}
+        $name[] = $shell->name;
+        $name[] = $shell->command;
 
-	/**
- * Compute name based on request information
- *
- * @param  CakeRequest $request
- * @return string
- */
-	protected function _deriveNameFromRequest(Request $request) {
-		$name = [];
+        return join('/', $name);
+    }
 
-		if ($request->getParam('prefix')) {
-			$name[] = $request->getParam('prefix');
-		}
+    /**
+     * Derive the transaction name
+     *
+     * @param \Cake\Console\Command $command The command instance
+     * @return string
+     */
+    protected function _deriveNameFromCommand(Command $command): string
+    {
+        return $command->getName();
+    }
 
-		if ($request->getParam('plugin')) {
-			$name[] = $request->getParam('plugin');
-		}
+    /**
+     * Compute name based on request information
+     *
+     * @param \Cake\Http\ServerRequest $request The request object
+     * @return string
+     */
+    protected function _deriveNameFromRequest(ServerRequest $request): string
+    {
+        $name = [];
 
-		$name[] = $request->getParam('controller');
-		$name[] = $request->getParam('action');
+        if ($request->getParam('prefix')) {
+            $name[] = $request->getParam('prefix');
+        }
 
-		$name = array_filter($name);
-		if (empty($name)) {
-			return $request->here;
-		}
+        if ($request->getParam('plugin')) {
+            $name[] = $request->getParam('plugin');
+        }
 
-		$name = join('/', $name);
+        $name[] = $request->getParam('controller');
+        $name[] = $request->getParam('action');
 
-		if ($request->getParam('ext')) {
-			$name .= '.' . $request->getParam('ext');
-		}
+        $name = array_filter($name);
+        if (empty($name)) {
+            return $request->here;
+        }
 
-		return $name;
-	}
+        $name = join('/', $name);
 
+        if ($request->getParam('ext')) {
+            $name .= '.' . $request->getParam('ext');
+        }
+
+        return $name;
+    }
 }

@@ -2,6 +2,8 @@
 
 You can modify your files like this to have full NewRelic support.
 
+This is a fork of https://github.com/jippi/cakephp-newrelic
+
 ## Things included
 
 - NewRelic.NewRelic task
@@ -9,32 +11,26 @@ You can modify your files like this to have full NewRelic support.
 - NewRelicTrait trait
 - NewRelic.NewRelic
 
-<<<<<<< HEAD
-## Installation
-
-```
-composer require jippi/cakephp-newrelic
-```
-
-
-### Console
-=======
 ## Requirements
 - [New Relic PHP agent](https://docs.newrelic.com/docs/agents/php-agent/getting-started/introduction-new-relic-php) installed as a PHP module
->>>>>>> cake3
 
 ## Installation
 
-Note: This branch is for CakePHP 3.4 and newer
+First require the NewRelic plugin.
 
 ```
-composer require jippi/cakephp-newrelic:dev-cake3
+composer require uafrica/cakephp-newrelic
 ```
 
+Then load the plugin
+
+```
+bin/cake plugin load NewRelic
+```
 
 ### Shell
 
-Include this snippet in `src/Shell/AppShell.php`
+Shells have been deprecated since CakePHP 3.6, but are still available for use. Include this snippet in `src/Shell/AppShell.php` and ensure all your shells extend it.
 
 ```php
 	public function startup() {
@@ -48,17 +44,45 @@ Include this snippet in `src/Shell/AppShell.php`
 	}
 ```
 
+### Commands
+
+Commands unfortunately do not offer a simple way to "inject" code into all commands. A trait is offered to handle the NewRelic injection.
+
+Example usage:
+
+```php
+<?php
+
+namespace App\Command;
+
+use Cake\Console\Arguments;
+use Cake\Console\Command;
+use Cake\Console\ConsoleIo;
+use NewRelic\Traits\NewRelicTrait;
+
+class ChannelsImportCommand extends Command 
+{
+	use NewRelicTrait;
+
+	public function execute(Arguments $args, ConsoleIo $io)
+	{
+		$this->setName($this);
+		$this->setArguments($args);
+
+		//Rest of your command code.
+	}
+}
+```
+
 ### Controller
 
 Simply add `NewRelic.NewRelic` to your `$components` list
 
-## webroot/index.php
+### webroot/index.php
 
-Add this in top of your file before `define('DS', 'DIRECTORY_SEPARATOR')`
+Add this in top of your file after `require dirname(__DIR__) . '/vendor/autoload.php';`
 
 ```php
-require_once dirname(dirname(__DIR__)) . '/vendors/autoload.php';
-
 if (extension_loaded('newrelic')) {
 	$appType = 'app';
 	$appName = 'web';
@@ -77,11 +101,11 @@ if (extension_loaded('newrelic')) {
 // Rest of your index.php here
 ```
 
-## bin/cake.php
+### bin/cake.php
+
+Add this in top of your file after `require dirname(__DIR__) . '/vendor/autoload.php';`
 
 ```php
-require_once dirname(dirname(__DIR__)) . '/vendors/autoload.php';
-
 if (extension_loaded('newrelic')) {
 	define('NEW_RELIC_APP_NAME', sprintf('%s - app - cli', 'production'));
 	newrelic_set_appname(NEW_RELIC_APP_NAME);
@@ -92,8 +116,7 @@ if (extension_loaded('newrelic')) {
 // Rest of your cake.php file here
 ```
 
-### Remark if using > CakePHP 3.3.0 and using middleware
-If you utilise CakePHP middlewares from https://book.cakephp.org/3.0/en/controllers/middleware.html 
+### Middleware
 
 You can use the supplied `NewRelicErrorHandlerMiddleware` placed in `NewRelic\Middleware\NewRelicErrorHandlerMiddleware` which extends the built in `Cake\Error\Middleware\ErrorHandlerMiddleware`. By using this you'll get the NewRelic working *and* have default CakePHP behavior.
 
