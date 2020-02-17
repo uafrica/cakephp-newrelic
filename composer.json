@@ -1,6 +1,5 @@
 {
   "name":"uafrica/cakephp-newrelic",
-  "version": "1.0.0",
   "description":"CakePHP <3 NewRelic",
   "type":"cakephp-plugin",
   "keywords":[
